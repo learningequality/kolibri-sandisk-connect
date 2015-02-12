@@ -39,7 +39,12 @@ class WorkerThread(threading.Thread):
         for stage in stages[stage_index:]:
             self.stage = stage
             self.log("Running stage %s..." % stage)
-            getattr(self, "run_stage__%s" % stage)() # run the specially named method for this stage
+            try:
+                getattr(self, "run_stage__%s" % stage)() # run the specially named method for this stage
+            except Exception as e:
+                self.log("ERROR! Aborting thread. Exception: %s" % e)
+                raise
+
             self.log("Completed stage %s!" % stage)
             mark_stage_completed(self.sandisk_id, stage)
         # play siren here
