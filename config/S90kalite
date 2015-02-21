@@ -11,6 +11,8 @@ case "$1" in
 
         start)
                 echo "Starting ka-lite..."
+                killall python
+                rm /mnt/storage/ka-lite/kalite/runcherrypyserver.pid
                 su admin -c "/mnt/storage/ka-lite/start.sh"
                 ;;
 
