@@ -1,0 +1,1 @@
+sudo cp wipi_list.txt /etc/udev/rules.d/10-wipi-network-device.rules

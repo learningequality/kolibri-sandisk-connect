@@ -1,1 +1,3 @@
 pybuild/
+secrets.py
+*.pyc
