@@ -29,11 +29,22 @@ expect "Media_Drive"
 send "unzip ../ka-lite.zip\n"
 
 expect "Media_Drive"
-send "cd kalite\n"
+send "python setup.py develop\n"
 
-# TODO-BLOCKER(jamalex): what should username and password be set to?
 expect "Media_Drive"
-send "./manage.py setup --noinput -u admin -e test@test.com -p pass -o 'Demo Server' -d 'A Demo Server'"
+send "sed -i '/django.test.client/ s/^/#/' python-packages/fle_utils/internet/webcache.py\n"
+
+expect "Media_Drive"
+send "sed -i '/django.test.signals/ s/^/#/' python-packages/django/contrib/auth/hashers.py\n"
+
+expect "Media_Drive"
+send "sed -i '/@receiver(setting_changed)/ s/^/#/' python-packages/django/contrib/auth/hashers.py\n"
+
+expect "Media_Drive"
+send "touch .KALITE_SOURCE_DIR\n"
+
+expect "Media_Drive"
+send "PYTHONPATH=/mnt/storage/ka-lite/dist-packages python kalitectl.py start\n"
 
 expect "Media_Drive"
 send "exit\n";
