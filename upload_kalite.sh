@@ -8,6 +8,7 @@ read PASSWD
 rm ka-lite.zip 2> /dev/null
 cd ka-lite
 zip ../ka-lite.zip * -r
+cd ..
 
 ncftp -u $USER -p $PASSWD $HOST <<END_SCRIPT
 cd /mnt/storage/
@@ -18,4 +19,5 @@ put config/S90kalite
 quit
 END_SCRIPT
 
-../scripts/_install_kalite.sh $PASSWD
+
+scripts/_install_kalite.sh $PASSWD

@@ -3,6 +3,10 @@
 mkdir -p pybuild
 cd pybuild
 
+# download setuptools 
+wget https://pypi.python.org/packages/source/s/setuptools/setuptools-18.4.tar.gz#md5=214c6c43bd7035e870c1beab402c48e7
+tar xvf setuptools-18.4.tar.gz
+
 # download arm-fsl toolchain
 git clone git@github.com:embeddedarm/linux-2.6.35.3-imx28.git
 
@@ -95,9 +99,9 @@ cd $BASE_PYTHON_COMPILATION_PATH/Python-2.7.3/_install/lib/
 rm -r python2.7-minimal
 cp -r python2.7 python2.7-minimal
 cd python2.7-minimal
-rm -r lib2to3 idlelib lib-tk site-packages config lib-dynload distutils
+rm -r site-packages config lib-dynload
 rm *.doc *.txt
-rm -r `find -name "test"`
+#rm -r `find -name "test"`
 zip -r -y python27.zip .
 
 # copy in the python library files

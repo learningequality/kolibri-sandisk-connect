@@ -50,6 +50,22 @@ expect "Media_Drive"
 send "rm /usr/lib/python27.zip 2> /dev/null; ln -s /mnt/storage/python/usr/lib/python27.zip /usr/lib/python27.zip\n"
 
 expect "Media_Drive"
+send "cd /mnt/storage/setuptools-18.4\n"
+
+expect "Media_Drive"
+send "python setup.py install\n"
+
+expect "Media_Drive"
+send "cd /var/ftp/storage/; dd if=/dev/zero of=/var/ftp/storage/temp.bin bs=1 count=0 seek=1G; 
+      mkfs.ext4 /var/ftp/storage/temp.bin\n" 
+
+expect "Media_Drive"
+send "y\n"
+
+expect "Media_Drive"
+send "mount -o loop,rw,nodev,noexec /var/ftp/storage/temp.bin /tmp\n"
+
+expect "Media_Drive"
 send "exit\n";
 interact
 
