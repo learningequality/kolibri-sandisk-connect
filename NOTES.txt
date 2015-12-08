@@ -1,0 +1,28 @@
+/etc/init.d/service/dnsd
+    
+    Change:
+        sed -i "s/^upstream_servers\[.*/upstream_servers\[\"\.\"\]=\"$WLAN_IP\"/g" $DNSD_CFG
+    to:
+        sed -i "s/^upstream_servers\[.*/upstream_servers\[\"\.\"\]=\"$LOCAL_IF\"/g" $DNSD_CFG
+
+    Change:
+        sed -i "s/^upstream_servers\[.*/upstream_servers\[\"\.\"\]=\"$DNS_STR\"/g" $DNSD_CFG
+    to:
+        sed -i "s/^upstream_servers\[.*/upstream_servers\[\"\.\"\]=\"$DNS_STR, $LOCAL_IF\"/g" $DNSD_CFG
+    
+    Change:
+        sed -i "s/^ipv4_bind_addresses.*/ipv4_bind_addresses=\"$LOCAL_IF,$WLAN_IP\"/g" $DNSD_CFG
+    to:
+        sed -i "s/^ipv4_bind_addresses.*/ipv4_bind_addresses=\"$WLAN_IP\"/g" $DNSD_CFG
+        
+    Change:
+        echo 'mediadrive.sandisk.com.   A  192.168.11.1 ~ ' >  $DB_LOCATION/$DB_FILENAME
+    to:
+        echo 'mediadrive.sandisk.com.   A  192.168.11.1 ~ ' >  $DB_LOCATION/$DB_FILENAME
+        echo 'ka.lite.                  A  192.168.11.1 ~ ' >> $DB_LOCATION/$DB_FILENAME
+        echo 'ka.light.                 A  192.168.11.1 ~ ' >> $DB_LOCATION/$DB_FILENAME
+        echo 'kalite.                   A  192.168.11.1 ~ ' >> $DB_LOCATION/$DB_FILENAME
+        
+Run helpers/replace_port_in_nimbus_binary.py on Sandisk to switch port to 83
+
+

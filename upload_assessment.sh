@@ -5,16 +5,9 @@ USER='root'
 echo "Please enter root password for device:"
 read PASSWD
 
-rm ka-lite.zip 2> /dev/null
-cd ka-lite
-zip ../ka-lite.zip * -r -x "/content/*"
-cd ..
-
 ncftp -u $USER -p $PASSWD $HOST <<END_SCRIPT
-cd /mnt/storage/
+cd /mnt/storage/ka-lite/content/assessment/khan
 binary
-put ka-lite.zip
+put khan_assessment.zip
 quit
 END_SCRIPT
-
-scripts/_install_kalite.sh $PASSWD

@@ -1,0 +1,2 @@
+- name: Test
+  template: src=test.j2 dest=/root/testing.txt
