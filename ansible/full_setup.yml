@@ -1,0 +1,10 @@
+---
+
+- hosts: sandisk
+  
+  vars: 
+      test: 'qqq'
+  
+  roles:
+    - system
+    - kalite
