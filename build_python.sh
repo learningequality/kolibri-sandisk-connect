@@ -101,7 +101,6 @@ cp -r python2.7 python2.7-minimal
 cd python2.7-minimal
 rm -r site-packages config lib-dynload
 rm *.doc *.txt
-#rm -r `find -name "test"`
 zip -r -y python27.zip .
 
 # copy in the python library files

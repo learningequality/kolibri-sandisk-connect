@@ -1,20 +1,19 @@
 #!/bin/sh
-HOST='192.168.11.1'
 USER='root'
 
-cd pybuild
+cd ../pybuild
 
-echo "Please enter root password for device:"
-read PASSWD
+HOST="$1"
+PASSWD="$2"
 
 ncftp -u $USER -p $PASSWD $HOST <<END_SCRIPT
 cd /mnt/storage/
 binary
 put python.zip
-put -r setuptools-18.4
+put setuptools-18.4.tar.gz
 quit
 END_SCRIPT
 
 ../scripts/_install_python.sh $PASSWD
 
-cd ..
+cd ../ansible/

@@ -1,0 +1,29 @@
+- name: Create .kalite directory
+  file: path=/mnt/storage/.kalite state=directory
+
+- name: Create symlink for .kalite directory
+  file: src=/mnt/storage/.kalite dest=/root/.kalite state=link
+
+- name: Create .usrsharekalite directory
+  file: path=/mnt/storage/.usrsharekalite state=directory
+
+- name: Create symlink for .usrsharekalite directory
+  file: src=/mnt/storage/.usrsharekalite dest=/usr/share/kalite state=link
+
+- name: Copy ka-lite sdist over
+  copy: src=ka-lite-static-0.16.0.tar.gz dest=/mnt/storage/
+
+- name: Untar ka-lite sdist
+  unarchive: src=/mnt/storage/ka-lite-static-0.16.0.tar.gz dest=/mnt/storage copy=no
+
+- name: Copy assessment items over
+  synchronize: 
+    src: khan_assessment.zip 
+    dest: /mnt/storage/khan_assessment.zip
+
+- name: Installing ka-lite
+  shell: python setup.py install chdir=/mnt/storage/ka-lite-static-0.16.0
+
+- name: Unpacking assessment items
+  shell: PYTHONPATH=/mnt/storage/ka-lite-static-0.16.0/dist-packages python kalitectl.py manage unpack_assessment_zip /mnt/storage/khan_assessment.zip chdir=/mnt/storage/ka-lite-static-0.16.0
+

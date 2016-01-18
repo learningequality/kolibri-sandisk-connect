@@ -21,13 +21,13 @@ case "$1" in
                 python /root/scripts/proxy_sandisk_portal.py &
                 
                 echo "Starting ka-lite..."
-                PYTHONPATH=/mnt/storage/ka-lite-static-0.16.0/dist-packages python /mnt/storage/ka-lite-static-0.16.0/kalitectl.py start
+                KALITE_HOME=/root/.kalite PYTHONPATH=/mnt/storage/ka-lite/dist-packages python /mnt/storage/ka-lite/kalitectl.py start
                 wget http://127.0.0.1:8008/ -O /dev/null
                 ;;
              
         stop)                                  
                 echo "Shutting down ka-lite..."                                                            
-                PYTHONPATH=/mnt/storage/ka-lite-static-0.16.0/dist-packages python /mnt/storage/ka-lite-static-0.16.0/kalitectl.py stop
+                KALITE_HOME=/root/.kalite PYTHONPATH=/mnt/storage/ka-lite/dist-packages python /mnt/storage/ka-lite/kalitectl.py stop
                 pkill -f resolve_all_dns_to_host_ip.py
                 pkill -f redirect_port_80_to_kalite.py
                 ;;
