@@ -1,0 +1,2 @@
+- name: copy content directory over
+  synchronize: src=content_videos dest=/root/.kalite/content

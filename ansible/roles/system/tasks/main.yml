@@ -1,2 +1,29 @@
-- name: Test
-  template: src=test.j2 dest=/root/testing.txt
+- name: Copy over dnsd file
+  copy: src=dnsd dest=/etc/init.d/service/dnsd
+
+- name: Copy over S90kalite file
+  copy: src=S90kalite dest=/etc/init.d/service/S90kalite
+
+- name: Make scripts directory
+  file: path=/root/scripts state=directory
+
+- name: Copy over proxy script
+  copy: src=proxy_sandisk_portal.py dest=/root/scripts
+
+- name: Copy over redirect port script
+  copy: src=redirect_port_80_to_kalite.py dest=/root/scripts
+
+- name: Copy over replace port script
+  copy: src=replace_port_in_nimbus_binary.py dest=/root/scripts      
+
+- name: Copy over resolve dns script
+  copy: src=resolve_all_dns_to_host_ip.py dest=/root/scripts
+
+- name: Stop nimbus server
+  shell: /etc/init.d/service/nimbus stop
+
+- name: Call replace port script
+  shell: python /root/scripts/replace_port_in_nimbus_binary.py
+
+- name: Start nimbus server
+  shell: /etc/init.d/service/nimbus start

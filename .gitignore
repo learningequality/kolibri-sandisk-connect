@@ -1,3 +1,7 @@
 pybuild/
 secrets.py
 *.pyc
+content_khan_en.sqlite
+In_Progress_Scripts/
+khan_assessment.zip
+ansible/roles/kalite/files/

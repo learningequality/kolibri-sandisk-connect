@@ -1,0 +1,9 @@
+- name: Checking if python is on the target
+  ping:
+  register: python_test
+  ignore_errors: True
+
+- name: Installing python
+  include: install_python.yml
+  when: hostvars.sandisk.python_test.failed is defined
+  

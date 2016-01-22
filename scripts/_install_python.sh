@@ -17,6 +17,9 @@ expect "Media_Drive"
 send "cd /mnt/storage/\n"
 
 expect "Media_Drive"
+send "tar -xvzf setuptools-18.4.tar.gz\n"
+
+expect "Media_Drive"
 send "rm -r python\n"
 
 expect "Media_Drive"

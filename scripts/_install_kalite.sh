@@ -6,7 +6,6 @@ set PASSWD [lindex $argv 0]
 
 spawn telnet $HOST
 
-
 expect "Media_Drive login:"
 send "$USER\r"
 
@@ -14,39 +13,34 @@ expect "Password:"
 send "$PASSWD\r"
 
 expect "Media_Drive"
+send "mkdir /mnt/storage/.kalite\n"
+
+expect "Media_Drive"
+send "rm /root/.kalite 2> /dev/null; ln -s /mnt/storage/.kalite /root/.kalite\n"
+
+expect "Media_Drive"
+send "mkdir /mnt/storage/.usrsharekalite\n"
+
+expect "Media_Drive"
+send "rm /usr/share/kalite 2> /dev/null; ln -s /mnt/storage/.usrsharekalite /usr/share/kalite\n"
+
+expect "Media_Drive"
 send "cd /mnt/storage/\n"
 
 expect "Media_Drive"
-send "rm -r ka-lite\n"
+send "rm -r ka-lite-static-0.16.0\n"
 
 expect "Media_Drive"
-send "mkdir ka-lite\n"
+send "tar -zxvf ka-lite-static-0.16.0.tar.gz\n"
 
 expect "Media_Drive"
-send "cd ka-lite\n"
+send "cd ka-lite-static-0.16.0\n"
 
 expect "Media_Drive"
-send "unzip ../ka-lite.zip\n"
+send "python setup.py install\n"
 
 expect "Media_Drive"
-send "python setup.py develop\n"
+send "PYTHONPATH=/mnt/storage/ka-lite-static-0.16.0/dist-packages python kalitectl.py manage unpack_assessment_zip /mnt/storage/khan_assessment.zip\n"
 
-expect "Media_Drive"
-send "sed -i '/django.test.client/ s/^/#/' python-packages/fle_utils/internet/webcache.py\n"
-
-expect "Media_Drive"
-send "sed -i '/django.test.signals/ s/^/#/' python-packages/django/contrib/auth/hashers.py\n"
-
-expect "Media_Drive"
-send "sed -i '/@receiver(setting_changed)/ s/^/#/' python-packages/django/contrib/auth/hashers.py\n"
-
-expect "Media_Drive"
-send "touch .KALITE_SOURCE_DIR\n"
-
-expect "Media_Drive"
-send "PYTHONPATH=/mnt/storage/ka-lite/dist-packages python kalitectl.py start\n"
-
-expect "Media_Drive"
-send "exit\n";
 interact
 

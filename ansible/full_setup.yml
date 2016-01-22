@@ -1,10 +1,9 @@
 ---
-
 - hosts: sandisk
-  
-  vars: 
-      test: 'qqq'
+  gather_facts: no
   
   roles:
-    - system
+    - python
     - kalite
+    - content
+    - system
