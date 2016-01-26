@@ -1,2 +1,2 @@
-# add the following when running ansible-playbook:   --extra-vars "ansible_ssh_host=192.168.11.1 ansible_ssh_pass=****"
+# add the following when running ansible-playbook:   --extra-vars "num_videos=7611 ansible_ssh_host=192.168.11.1 ansible_ssh_pass=****"
 sandisk ansible_ssh_user=root ansible_python_interpreter=/bin/python
