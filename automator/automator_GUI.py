@@ -32,21 +32,9 @@ class Application(Frame):
 		nb.select(tab_id)
 		self.update_idletasks()
 		
-		# find available sandisks, else show GUI error
+		# find available sandisks and available wipis
 		sandisk_list = get_server_list()
-		if sandisk_id not in sandisk_list:
-			tkMessageBox.showerror("SSID Unavailable", "SanDisk ID: %s not in list of available SanDisks.\nPlease check connection or SanDisk ID." % sandisk_id)
-			nb.forget(tab_id)
-			self.SSID_submit.config(state=NORMAL)
-			return
-
-		# find available wipis, else show GUI error
 		wipi_list = get_wipi_list()
-		if len(wipi_list) == 0:
-			tkMessageBox.showerror("Wipis Unavailable", "There are no available wipis.")
-			nb.forget(tab_id)
-			self.SSID_submit.config(state=NORMAL)
-			return
 
 		# remove wipis and sandisks in use
 		for worker in WorkerThread.get_active():
@@ -55,6 +43,19 @@ class Application(Frame):
 			if worker.wipi_name in wipi_list: 
 				wipi_list.remove(worker.wipi_name)
 		
+		# show errors for sandisks or wipis in GUI
+		if sandisk_id not in sandisk_list:
+			tkMessageBox.showerror("SSID Unavailable", "SanDisk ID: %s not in list of available SanDisks.\nPlease check connection or SanDisk ID." % sandisk_id)
+			nb.forget(tab_id)
+			self.SSID_submit.config(state=NORMAL)
+			return
+
+		if len(wipi_list) == 0:
+			tkMessageBox.showerror("Wipis Unavailable", "There are no available wipis.")
+			nb.forget(tab_id)
+			self.SSID_submit.config(state=NORMAL)
+			return
+
 		# choose random wipi and assign id
 		wipi_name = random.choice(wipi_list)	
 		self.wipi_dict[wipi_name] = len(self.wipi_dict) + 1
@@ -73,11 +74,6 @@ class Application(Frame):
 		thread.start()
 
 		time.sleep(5)
-
-    def test(self):
-	for i in range(10):
-		print "Hello!"
-		time.sleep(10)
 
     def closeTab(self, tab, th):
 	# prevent user from closing tab if thread is active

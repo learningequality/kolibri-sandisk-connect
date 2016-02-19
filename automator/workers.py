@@ -35,7 +35,7 @@ class WorkerThread(threading.Thread):
     def execute(self, command):
 	# continuously display output to text screen
 	self.text_id.config(state=NORMAL)
-	popen = subprocess.Popen(command, stdout=subprocess.PIPE, shell=True)
+	popen = subprocess.Popen(command, stdout=subprocess.PIPE, shell=True, env={'PYTHONUNBUFFERED': 'True'})
 	lines_iterator = iter(popen.stdout.readline, b"")
 	for line in lines_iterator:
 		self.text_id.insert(END, line)
@@ -52,7 +52,7 @@ class WorkerThread(threading.Thread):
         self.add_IP_route()
 	# run ansible commands
 	os.chdir('../ansible/')
-	ansible_command = 'ANSIBLE_HOST_KEY_CHECKING=False ansible-playbook -i hosts --extra-vars "ansible_ssh_host=%s ansible_ssh_pass=%s" full_setup.yml' % (self.ip, secrets.SANDISK_ROOT_PASSWORD)
+	ansible_command = 'ANSIBLE_HOST_KEY_CHECKING=False ansible-playbook -i hosts --extra-vars "num_videos=7611 ansible_ssh_host=%s ansible_ssh_pass=%s" full_setup.yml' % (self.ip, secrets.SANDISK_ROOT_PASSWORD)
 	self.execute(ansible_command)
 	# remove wipi from dictionary
 	del self.wipi_dict[self.wipi_name]  
