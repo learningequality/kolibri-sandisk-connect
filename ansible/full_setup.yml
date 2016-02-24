@@ -3,7 +3,7 @@
   gather_facts: no
   
   roles:
+    - pre_checks
     - python
     - kalite
-    - content
     - system

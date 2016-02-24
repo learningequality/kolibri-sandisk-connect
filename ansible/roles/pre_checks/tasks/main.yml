@@ -1,0 +1,31 @@
+   - name: Check for content folder
+     raw: ls /mnt/storage/.kalite/content
+     register: content_exist
+     ignore_errors: True
+
+   - name: Checking existence of content folder
+     fail: msg="This Sandisk does NOT have ANY videos!"
+     when: content_exist.stdout.find('No such file') != -1
+
+   - name: Count the number of content videos
+     raw: ls -l /mnt/storage/.kalite/content/*.mp4  | wc -l 
+     register: num_content_videos
+     ignore_errors: True
+   
+   - name: Check for existense of khan_assessment.zip
+     raw: ls /mnt/storage/khan_assessment.zip
+     register: check_for_zip
+     ignore_errors: True
+
+   - name: Check videos and zip
+     fail: msg="This Sandisk only contains {{ num_content_videos.stdout.strip() }}/{{ num_videos }} videos and does NOT contain khan_assessment.zip!"
+     when: num_content_videos.stdout.find('{{ num_videos }}') == -1 and check_for_zip.stdout.find('No such file') != -1
+
+   - name: Check number of videos
+     fail: msg="This Sandisk only contains {{ num_content_videos.stdout.strip() }}/{{ num_videos }} videos!"
+     when: num_content_videos.stdout.find('{{ num_videos }}') == -1
+
+   - name: Check assessment.zip
+     fail: msg="This Sandisk does NOT contain the khan_assessment.zip!"
+     when: check_for_zip.stdout.find('No such file') != -1
+
