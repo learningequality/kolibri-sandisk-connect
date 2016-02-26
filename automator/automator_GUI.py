@@ -8,18 +8,19 @@ import subprocess
 import os
 import time
 import random
+import re
 
 from workers import WorkerThread
-from wifi import get_wipi_list
-from wifi import get_server_list
-
+from wifi import get_wipi_list, get_server_list
 
 class Application(Frame):
     def submit(self, sandisk_id, nb):
-	# if string does not meet requirements, do nothing
-	if not sandisk_id or len(sandisk_id) != 4:
-		return False
+	# if string does not meet requirements, display error and correct syntax
+	if not re.match("^[A-Za-z0-9]{4}$", sandisk_id):
+		tkMessageBox.showinfo("SSID Invalid Syntax", "Please enter inputs with format 'abc1' or 'ABC1'.\nLetters and numbers only.")
+		return
 
+	sandisk_id = sandisk_id.upper()
         result = tkMessageBox.askyesno("SSID Confirmation", "Is SSID %s correct?" % sandisk_id)
 	if result:
 		# create notebook tab, and update GUI
@@ -33,8 +34,8 @@ class Application(Frame):
 		self.update_idletasks()
 		
 		# find available sandisks and available wipis
-		sandisk_list = get_server_list()
 		wipi_list = get_wipi_list()
+		sandisk_list = get_server_list(wipi_list)
 
 		# remove wipis and sandisks in use
 		for worker in WorkerThread.get_active():
@@ -51,20 +52,21 @@ class Application(Frame):
 			return
 
 		if len(wipi_list) == 0:
-			tkMessageBox.showerror("Wipis Unavailable", "There are no available wipis.")
+			tkMessageBox.showerror("Wifi Adapter Unavailable", "There are no available wifi adapters.")
 			nb.forget(tab_id)
 			self.SSID_submit.config(state=NORMAL)
 			return
 
 		# choose random wipi and assign id
 		wipi_name = random.choice(wipi_list)	
-		self.wipi_dict[wipi_name] = len(self.wipi_dict) + 1
+		if wipi_name not in self.wipi_dict:
+			self.wipi_dict[wipi_name] = len(self.wipi_dict) + 1
 		
 		# update tab name
 		nb.tab(tab_id, text=sandisk_id)		
 
 		#Create worker thread with this pair
-		thread = WorkerThread(wipi_name, sandisk_id, text, self.wipi_dict, nb)
+		thread = WorkerThread(wipi_name, sandisk_id, text, self.wipi_dict[wipi_name], nb)
 
 		self.SSID_submit.config(state=NORMAL)
 
@@ -73,13 +75,11 @@ class Application(Frame):
 		#Start the thread
 		thread.start()
 
-		time.sleep(5)
-
     def closeTab(self, tab, th):
 	# prevent user from closing tab if thread is active
-	#if th.isAlive():
-	#	tkMessageBox.showerror('Closing Tab Error', 'Process is still running.\n Please wait for it to finish.')
-	#	return
+	if th.isAlive():
+		tkMessageBox.showerror('Closing Tab Error', 'Process is still running.\n Please wait for it to finish.')
+		return
 	# close tab on user request
 	result = tkMessageBox.askyesno('Close Tab Confirmation', 'Are you sure want to close the current tab?')
 	if result:

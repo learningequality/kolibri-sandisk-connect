@@ -13,13 +13,11 @@ routing_table_lock = threading.Lock()
 
 class WorkerThread(threading.Thread):
     
-    def __init__(self, wipi_name, sandisk_id, text_id, wipi_dict, nb):
+    def __init__(self, wipi_name, sandisk_id, text_id, wipi_id, nb):
         threading.Thread.__init__(self)
-        self.wipi_id = wipi_dict[wipi_name]
         self.sandisk_id = sandisk_id
-        self.ip = "192.168.11.2%.2d" % self.wipi_id
+        self.ip = "192.168.11.2%.2d" % wipi_id
 	self.text_id = text_id
-	self.wipi_dict = wipi_dict
 	self.wipi_name = wipi_name
 	self.nb = nb
 	self.tab_id = len(nb.tabs()) - 1
@@ -48,14 +46,13 @@ class WorkerThread(threading.Thread):
 	
     def run(self):
         self.log("Starting worker...")
+	self.setup_ssh()
         self.connect_server_to_wipi()
         self.add_IP_route()
 	# run ansible commands
 	os.chdir('../ansible/')
 	ansible_command = 'ANSIBLE_HOST_KEY_CHECKING=False ansible-playbook -i hosts --extra-vars "num_videos=7611 ansible_ssh_host=%s ansible_ssh_pass=%s" full_setup.yml' % (self.ip, secrets.SANDISK_ROOT_PASSWORD)
 	self.execute(ansible_command)
-	# remove wipi from dictionary
-	del self.wipi_dict[self.wipi_name]  
 	# updates tab name
 	self.nb.tab(self.tab_id, text=("%s (DONE!)" % self.sandisk_id))
 
