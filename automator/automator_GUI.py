@@ -14,14 +14,15 @@ from workers import WorkerThread
 from wifi import get_wipi_list, get_server_list
 
 class Application(Frame):
+
     def submit(self, sandisk_id, nb):
 	# if string does not meet requirements, display error and correct syntax
 	if not re.match("^[A-Za-z0-9]{4}$", sandisk_id):
 		tkMessageBox.showinfo("SSID Invalid Syntax", "Please enter inputs with format 'abc1' or 'ABC1'.\nLetters and numbers only.")
 		return
 
-	sandisk_id = sandisk_id.upper()
         result = tkMessageBox.askyesno("SSID Confirmation", "Is SSID %s correct?" % sandisk_id)
+	sandisk_id = sandisk_id.upper()
 	if result:
 		# create notebook tab, and update GUI
 		page = ttk.Frame(nb)
@@ -35,6 +36,7 @@ class Application(Frame):
 		
 		# find available sandisks and available wipis
 		wipi_list = get_wipi_list()
+		total_wipis = len(wipi_list)
 		sandisk_list = get_server_list(wipi_list)
 
 		# remove wipis and sandisks in use
@@ -44,6 +46,8 @@ class Application(Frame):
 			if worker.wipi_name in wipi_list: 
 				wipi_list.remove(worker.wipi_name)
 		
+		available_wipis = len(wipi_list)
+
 		# show errors for sandisks or wipis in GUI
 		if sandisk_id not in sandisk_list:
 			tkMessageBox.showerror("SSID Unavailable", "SanDisk ID: %s not in list of available SanDisks.\nPlease check connection or SanDisk ID." % sandisk_id)
@@ -51,7 +55,7 @@ class Application(Frame):
 			self.SSID_submit.config(state=NORMAL)
 			return
 
-		if len(wipi_list) == 0:
+		if available_wipis == 0:
 			tkMessageBox.showerror("Wifi Adapter Unavailable", "There are no available wifi adapters.")
 			nb.forget(tab_id)
 			self.SSID_submit.config(state=NORMAL)
@@ -65,8 +69,8 @@ class Application(Frame):
 		# update tab name
 		nb.tab(tab_id, text=sandisk_id)		
 
-		#Create worker thread with this pair
-		thread = WorkerThread(wipi_name, sandisk_id, text, self.wipi_dict[wipi_name], nb)
+		#Create worker thread with this wifi, sandisk pair
+		thread = WorkerThread(wipi_name, sandisk_id, text, self.wipi_dict[wipi_name], nb, self.wifi, available_wipis, total_wipis)
 
 		self.SSID_submit.config(state=NORMAL)
 
@@ -85,6 +89,7 @@ class Application(Frame):
 	if result:
 		tab.destroy()
 
+
     def createWidgets(self):
 	# SSID label widget
 	self.SSID_label = Label(self, text="Please Enter SSID:")
@@ -95,6 +100,12 @@ class Application(Frame):
 	self.SSID_entry = Entry(self, textvariable=SSID)
 	self.SSID_entry.pack({"side": "left"})
 
+	wipi_length = len(get_wipi_list())
+	self.wifi = StringVar()
+	self.wifi_label = Label(self, textvariable=self.wifi)
+	self.wifi.set("%s/%s wifi adapters available" % (wipi_length, wipi_length))
+	self.wifi_label.pack({"side": "left"})
+
 	# add notebook to GUI
 	nb = ttk.Notebook(self)
 
@@ -104,6 +115,13 @@ class Application(Frame):
 
 	nb.pack(expand=1, fill="both")
 
+    def checkThreads(self):
+	workers = WorkerThread.get_active()
+	if len(workers) != 0:
+		tkMessageBox.showerror('Closing Window Error', 'Processes are still running.\n Please wait for them to finish.')
+		return
+	self.master.destroy()
+	
     def __init__(self, master=None):
         Frame.__init__(self, master)
         self.pack()
@@ -113,4 +131,5 @@ class Application(Frame):
 root = Tk()
 root.wm_title("Sandisk Configuration")
 app = Application(master=root)
+root.protocol("WM_DELETE_WINDOW", app.checkThreads)
 app.mainloop()

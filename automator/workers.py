@@ -13,7 +13,7 @@ routing_table_lock = threading.Lock()
 
 class WorkerThread(threading.Thread):
     
-    def __init__(self, wipi_name, sandisk_id, text_id, wipi_id, nb):
+    def __init__(self, wipi_name, sandisk_id, text_id, wipi_id, nb, wifi, available_wipis, total_wipis):
         threading.Thread.__init__(self)
         self.sandisk_id = sandisk_id
         self.ip = "192.168.11.2%.2d" % wipi_id
@@ -21,6 +21,9 @@ class WorkerThread(threading.Thread):
 	self.wipi_name = wipi_name
 	self.nb = nb
 	self.tab_id = len(nb.tabs()) - 1
+	self.wifi = wifi
+	self.available_wipis = available_wipis
+	self.total_wipis = total_wipis
 
     def log(self, message):
 	# log messages to the text screen of tab
@@ -35,26 +38,40 @@ class WorkerThread(threading.Thread):
 	self.text_id.config(state=NORMAL)
 	popen = subprocess.Popen(command, stdout=subprocess.PIPE, shell=True, env={'PYTHONUNBUFFERED': 'True'})
 	lines_iterator = iter(popen.stdout.readline, b"")
+	self.text_id.tag_config("text", foreground="black")
+	error = 0
 	for line in lines_iterator:
-		self.text_id.insert(END, line)
+		# if there is an error, display text in red
+		if "error" in line.lower():
+			self.text_id.tag_config("text", foreground="red")
+			error = 1
+		self.text_id.insert(END, line, "text")
 		self.text_id.see(END)
 	self.log("Worker completed!")
 	self.text_id.config(state=DISABLED)
+	return error
 
     def setup_ssh(self):
 	subprocess.call(['../scripts/_setup_ssh.sh', secrets.SANDISK_ROOT_PASSWORD])
 	
     def run(self):
         self.log("Starting worker...")
+	with routing_table_lock:
+		self.wifi.set("%s/%s wifi adapters available" % (self.available_wipis - 1, self.total_wipis) )
 	self.setup_ssh()
         self.connect_server_to_wipi()
         self.add_IP_route()
 	# run ansible commands
 	os.chdir('../ansible/')
 	ansible_command = 'ANSIBLE_HOST_KEY_CHECKING=False ansible-playbook -i hosts --extra-vars "num_videos=7611 ansible_ssh_host=%s ansible_ssh_pass=%s" full_setup.yml' % (self.ip, secrets.SANDISK_ROOT_PASSWORD)
-	self.execute(ansible_command)
+	error = self.execute(ansible_command)
 	# updates tab name
-	self.nb.tab(self.tab_id, text=("%s (DONE!)" % self.sandisk_id))
+	if error:
+		self.nb.tab(self.tab_id, text=("%s (ERROR!)" % self.sandisk_id))
+	else:
+		self.nb.tab(self.tab_id, text=("%s (DONE!)" % self.sandisk_id))
+	with routing_table_lock:
+		self.wifi.set("%s/%s wifi adapters available" % (self.available_wipis, self.total_wipis) )
 
     @classmethod
     def get_active(cls):
