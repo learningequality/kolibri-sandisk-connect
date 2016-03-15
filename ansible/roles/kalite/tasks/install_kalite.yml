@@ -10,17 +10,17 @@
 - name: Create symlink for .usrsharekalite directory
   file: src=/mnt/storage/.usrsharekalite dest=/usr/share/kalite state=link
 
-- name: Copy ka-lite sdist over
-  copy: src=ka-lite-static-0.16.0.tar.gz dest=/mnt/storage/
+- name: Create symlink for .content directory
+  file: src=/mnt/storage/materials/content dest=/mnt/storage/.kalite/content state=link
+
+#- name: Copy ka-lite sdist over
+#  copy: src=ka-lite-static-0.16.b2.tar.gz dest=/mnt/storage/
 
 - name: Untar ka-lite sdist
-  unarchive: src=/mnt/storage/ka-lite-static-0.16.0.tar.gz dest=/mnt/storage copy=no
+  unarchive: src=/mnt/storage/materials/ka-lite-static-0.16.b2.tar.gz dest=/mnt/storage copy=no
 
 - name: Installing ka-lite
-  shell: python setup.py install chdir=/mnt/storage/ka-lite-static-0.16.0
+  shell: python setup.py install chdir=/mnt/storage/ka-lite-static-0.16.b2
 
 - name: Unpacking assessment items
-  shell: PYTHONPATH=/mnt/storage/ka-lite-static-0.16.0/dist-packages python kalitectl.py manage unpack_assessment_zip /mnt/storage/khan_assessment.zip chdir=/mnt/storage/ka-lite-static-0.16.0
-
-- name: put content database
-  copy: src=content_khan_en.sqlite dest=/mnt/storage/.kalite/content
+  shell: PYTHONPATH=/mnt/storage/ka-lite-static-0.16.b2/dist-packages python kalitectl.py manage unpack_assessment_zip /mnt/storage/materials/khan_assessment.zip chdir=/mnt/storage/ka-lite-static-0.16.b2
