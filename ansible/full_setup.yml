@@ -4,6 +4,6 @@
   
   roles:
     - pre_checks
-    - python
+     - python
     - kalite
     - system

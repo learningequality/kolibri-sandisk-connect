@@ -13,7 +13,7 @@ routing_table_lock = threading.Lock()
 
 class WorkerThread(threading.Thread):
     
-    def __init__(self, wipi_name, sandisk_id, text_id, wipi_id, nb, wifi, available_wipis, total_wipis):
+    def __init__(self, wipi_name, sandisk_id, text_id, wipi_id, nb):
         threading.Thread.__init__(self)
         self.sandisk_id = sandisk_id
         self.ip = "192.168.11.2%.2d" % wipi_id
@@ -21,9 +21,6 @@ class WorkerThread(threading.Thread):
 	self.wipi_name = wipi_name
 	self.nb = nb
 	self.tab_id = len(nb.tabs()) - 1
-	self.wifi = wifi
-	self.available_wipis = available_wipis
-	self.total_wipis = total_wipis
 
     def log(self, message):
 	# log messages to the text screen of tab
@@ -36,42 +33,48 @@ class WorkerThread(threading.Thread):
     def execute(self, command):
 	# continuously display output to text screen
 	self.text_id.config(state=NORMAL)
-	popen = subprocess.Popen(command, stdout=subprocess.PIPE, shell=True, env={'PYTHONUNBUFFERED': 'True'})
+        env = {'PYTHONUNBUFFERED': 'True'}
+        env.update(os.environ)
+	popen = subprocess.Popen(command, stdout=subprocess.PIPE, shell=True, env=env)
 	lines_iterator = iter(popen.stdout.readline, b"")
 	self.text_id.tag_config("text", foreground="black")
+	self.text_id.tag_config("error", foreground="red")
 	error = 0
 	for line in lines_iterator:
 		# if there is an error, display text in red
-		if "error" in line.lower():
-			self.text_id.tag_config("text", foreground="red")
+		if "error" in line.lower() or "fatal" in line.lower():
 			error = 1
-		self.text_id.insert(END, line, "text")
+		if error:
+			self.text_id.insert(END, line, "error")
+		else:
+			self.text_id.insert(END, line, "text")
 		self.text_id.see(END)
 	self.log("Worker completed!")
 	self.text_id.config(state=DISABLED)
 	return error
 
     def setup_ssh(self):
-	subprocess.call(['../scripts/_setup_ssh.sh', secrets.SANDISK_ROOT_PASSWORD])
+	subprocess.call(['../scripts/_setup_ssh.sh', self.ip, secrets.SANDISK_ROOT_PASSWORD])
 	
     def run(self):
         self.log("Starting worker...")
-	with routing_table_lock:
-		self.wifi.set("%s/%s wifi adapters available" % (self.available_wipis - 1, self.total_wipis) )
-	self.setup_ssh()
         self.connect_server_to_wipi()
         self.add_IP_route()
+	self.setup_ssh()
 	# run ansible commands
 	os.chdir('../ansible/')
-	ansible_command = 'ANSIBLE_HOST_KEY_CHECKING=False ansible-playbook -i hosts --extra-vars "num_videos=7611 ansible_ssh_host=%s ansible_ssh_pass=%s" full_setup.yml' % (self.ip, secrets.SANDISK_ROOT_PASSWORD)
+	ansible_command = 'ANSIBLE_HOST_KEY_CHECKING=False ansible-playbook -vvvv -i hosts --extra-vars "num_videos=7611 ansible_ssh_host=%s ansible_ssh_pass=%s" full_setup.yml' % (self.ip, secrets.SANDISK_ROOT_PASSWORD)
 	error = self.execute(ansible_command)
 	# updates tab name
 	if error:
 		self.nb.tab(self.tab_id, text=("%s (ERROR!)" % self.sandisk_id))
 	else:
 		self.nb.tab(self.tab_id, text=("%s (DONE!)" % self.sandisk_id))
-	with routing_table_lock:
-		self.wifi.set("%s/%s wifi adapters available" % (self.available_wipis, self.total_wipis) )
+        self.cleanup()
+
+    def cleanup(self):
+        subprocess.call(["nmcli", "d", "disconnect", "iface", self.wipi_name])
+        subprocess.call(["sudo", "ip", "route", "delete", "%s/32" % self.ip])
 
     @classmethod
     def get_active(cls):
@@ -87,7 +90,7 @@ class WorkerThread(threading.Thread):
         with routing_table_lock:
             self.log("Lock ACQUIRED")
             self.log("Configuring routing table and SanDisk IP ")
-            subprocess.call(["sudo", "ip", "route", "delete", "%s/32" % self.ip, "dev", self.wipi_name])#catch errors
+            subprocess.call(["sudo", "ip", "route", "delete", "%s/32" % self.ip])#catch errors
             #pair the "default IP" with a particular WiPi on controller routing table
             self.log("A")
             subprocess.call(["sudo", "ip", "route", "add", "192.168.11.1/32", "dev", self.wipi_name])

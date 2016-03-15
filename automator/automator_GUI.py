@@ -36,7 +36,7 @@ class Application(Frame):
 		
 		# find available sandisks and available wipis
 		wipi_list = get_wipi_list()
-		total_wipis = len(wipi_list)
+		self.total_wipis = len(wipi_list)
 		sandisk_list = get_server_list(wipi_list)
 
 		# remove wipis and sandisks in use
@@ -46,7 +46,7 @@ class Application(Frame):
 			if worker.wipi_name in wipi_list: 
 				wipi_list.remove(worker.wipi_name)
 		
-		available_wipis = len(wipi_list)
+		self.available_wipis = len(wipi_list)
 
 		# show errors for sandisks or wipis in GUI
 		if sandisk_id not in sandisk_list:
@@ -55,8 +55,8 @@ class Application(Frame):
 			self.SSID_submit.config(state=NORMAL)
 			return
 
-		if available_wipis == 0:
-			tkMessageBox.showerror("Wifi Adapter Unavailable", "There are no available wifi adapters.")
+		if self.available_wipis == 0 or len(nb.tabs()) > self.total_wipis:
+			tkMessageBox.showerror("Wifi Adapter Unavailable", "There are no available wifi adapters. \nOr try to close completed tabs.")
 			nb.forget(tab_id)
 			self.SSID_submit.config(state=NORMAL)
 			return
@@ -70,7 +70,9 @@ class Application(Frame):
 		nb.tab(tab_id, text=sandisk_id)		
 
 		#Create worker thread with this wifi, sandisk pair
-		thread = WorkerThread(wipi_name, sandisk_id, text, self.wipi_dict[wipi_name], nb, self.wifi, available_wipis, total_wipis)
+		thread = WorkerThread(wipi_name, sandisk_id, text, self.wipi_dict[wipi_name], nb)
+		self.thread_list.append(thread)
+		self.wifi.set("%s/%s wifi adapters available" % (self.total_wipis - len(nb.tabs()), self.total_wipis))
 
 		self.SSID_submit.config(state=NORMAL)
 
@@ -84,10 +86,16 @@ class Application(Frame):
 	if th.isAlive():
 		tkMessageBox.showerror('Closing Tab Error', 'Process is still running.\n Please wait for it to finish.')
 		return
+	# update tab ids for each thread
+	index = self.thread_list.index(th)
+	for thread in self.thread_list[index:]:
+		thread.tab_id = thread.tab_id - 1
+	self.thread_list.remove(th)
 	# close tab on user request
 	result = tkMessageBox.askyesno('Close Tab Confirmation', 'Are you sure want to close the current tab?')
 	if result:
 		tab.destroy()
+	self.wifi.set("%s/%s wifi adapters available" % (self.total_wipis - len(self.nb.tabs()), self.total_wipis))
 
 
     def createWidgets(self):
@@ -100,20 +108,20 @@ class Application(Frame):
 	self.SSID_entry = Entry(self, textvariable=SSID)
 	self.SSID_entry.pack({"side": "left"})
 
-	wipi_length = len(get_wipi_list())
+	self.total_wipis = len(get_wipi_list())
 	self.wifi = StringVar()
 	self.wifi_label = Label(self, textvariable=self.wifi)
-	self.wifi.set("%s/%s wifi adapters available" % (wipi_length, wipi_length))
+	self.wifi.set("%s/%s wifi adapters available" % (self.total_wipis, self.total_wipis))
 	self.wifi_label.pack({"side": "left"})
 
 	# add notebook to GUI
-	nb = ttk.Notebook(self)
+	self.nb = ttk.Notebook(self)
 
 	# submit button which updates GUI
-	self.SSID_submit = Button(self, text="Submit", command=lambda: self.submit(SSID.get(), nb) )
+	self.SSID_submit = Button(self, text="Submit", command=lambda: self.submit(SSID.get(), self.nb) )
 	self.SSID_submit.pack({"side": "left"})
 
-	nb.pack(expand=1, fill="both")
+	self.nb.pack(expand=1, fill="both")
 
     def checkThreads(self):
 	workers = WorkerThread.get_active()
@@ -127,6 +135,7 @@ class Application(Frame):
         self.pack()
         self.createWidgets()
 	self.wipi_dict = dict()
+	self.thread_list = list()
 
 root = Tk()
 root.wm_title("Sandisk Configuration")

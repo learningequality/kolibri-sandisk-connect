@@ -1,5 +1,5 @@
    - name: Check for content folder
-     raw: ls /mnt/storage/.kalite/content
+     raw: ls /mnt/storage/materials/content
      register: content_exist
      ignore_errors: True
 
@@ -8,12 +8,12 @@
      when: content_exist.stdout.find('No such file') != -1
 
    - name: Count the number of content videos
-     raw: ls -l /mnt/storage/.kalite/content/*.mp4  | wc -l 
+     raw: ls -l /mnt/storage/materials/content/*.mp4  | wc -l 
      register: num_content_videos
      ignore_errors: True
    
    - name: Check for existense of khan_assessment.zip
-     raw: ls /mnt/storage/khan_assessment.zip
+     raw: ls /mnt/storage/materials/khan_assessment.zip
      register: check_for_zip
      ignore_errors: True
 
