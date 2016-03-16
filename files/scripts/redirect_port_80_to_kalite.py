@@ -1,5 +1,5 @@
 """
-Redirects all requests coming into port 80 to http://ka.lite:8008/
+Redirects all requests coming into port 80 to http://192.168.11.1:8008/
 First verifies that the KA Lite server is running, and displays loading screen if needed.
 """
 
@@ -20,7 +20,7 @@ class RedirectHandler(BaseHTTPServer.BaseHTTPRequestHandler):
 
     def do_HEAD(self):
         self.send_response(302)
-        self.send_header("Location", "http://ka.lite:8008/")
+        self.send_header("Location", "http://192.168.11.1:8008/")
         self.end_headers()
 
     def do_GET(self):

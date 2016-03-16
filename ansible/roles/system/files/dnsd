@@ -63,7 +63,10 @@ wlan_make_config_dnsd() {
         echo 'mediadrive.sandisk.com.   A  192.168.11.1 ~ ' >  $DB_LOCATION/$DB_FILENAME
         echo 'ka.lite.                  A  192.168.11.1 ~ ' >> $DB_LOCATION/$DB_FILENAME
         echo 'ka.light.                 A  192.168.11.1 ~ ' >> $DB_LOCATION/$DB_FILENAME
+        echo 'kalite.com.               A  192.168.11.1 ~ ' >> $DB_LOCATION/$DB_FILENAME
         echo 'kalite.                   A  192.168.11.1 ~ ' >> $DB_LOCATION/$DB_FILENAME
+        echo 'kalite.local.             A  192.168.11.1 ~ ' >> $DB_LOCATION/$DB_FILENAME
+        echo 'kalite.net.               A  192.168.11.1 ~ ' >> $DB_LOCATION/$DB_FILENAME
         # KA-LITE-MOD end
 
     if [ -f "$DNSD_CFG" ]
