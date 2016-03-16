@@ -1,10 +1,8 @@
 - name: Checking if ka-lite is on the target
-  shell: PYTHONPATH=/mnt/storage/ka-lite-static-0.16.0/dist-packages python kalitectl.py diagnose chdir=/mnt/storage/ka-lite-static-0.16.0
+  shell: PYTHONPATH=/mnt/storage/ka-lite-static-0.16.b2/dist-packages python /mnt/storage/ka-lite-static-0.16.b2/kalitectl.py diagnose
   register: kalite_test
   ignore_errors: True
 
-#- debug: var=kalite_test
-
 - name: Installing ka-lite
   include: install_kalite.yml
-  when: hostvars.sandisk.kalite_test.stderr.find('No such file') != 1
+  when: hostvars.sandisk.kalite_test.stderr.find('No such file') != -1 or hostvars.sandisk.kalite_test.stdout.find('DEVICE FAILURE') != -1

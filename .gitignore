@@ -2,6 +2,7 @@ pybuild/
 secrets.py
 *.pyc
 content_khan_en.sqlite
-In_Progress_Scripts/
 khan_assessment.zip
-ansible/roles/kalite/files/
+gen_ssh_keys.sh
+start_ssh.sh
+ka-lite-static-0.16.0.tar.gz
